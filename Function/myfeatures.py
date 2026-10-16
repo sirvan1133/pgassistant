@@ -1,3 +1,4 @@
+from Function.config import PANEL_VERIFY_TLS
 """
 Extra features for HolderBot, same architecture (requests + sqlite):
   1) Billing  : sum allocated/used traffic for an admin's users from index N
@@ -18,6 +19,7 @@ from Function.db import DEF_IMPORT_DATA, DEF_PANEL_ACCESS
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 ACTIVE_STATUSES = ("active", "on_hold")
+UNLIMITED_SENTINEL_BYTES = 1024 ** 5  # Treat legacy limits above 1 PiB as unlimited.
 
 
 def _new_proxy_settings(proto):
@@ -118,7 +120,7 @@ def _get_all_users(domain, headers, session=None, status=None, admin=None):
             url += f"&status={status}"
         if admin:
             url += f"&admin={admin}"
-        r = s.get(url, headers=headers, verify=False)
+        r = s.get(url, headers=headers, verify=PANEL_VERIFY_TLS)
         if r.status_code != 200:
             break
         data = r.json()
@@ -143,10 +145,11 @@ def DEF_BILLING_ADMINS(CHATID):
     domain, headers = _panel(CHATID)
     if not domain:
         return []
-    r = requests.get(f"{domain}/api/admins", headers=headers, verify=False)
+    r = requests.get(f"{domain}/api/admins", headers=headers, verify=PANEL_VERIFY_TLS)
     if r.status_code != 200:
         return []
-    admins = r.json()
+    data = r.json()
+    admins = data.get("admins", []) if isinstance(data, dict) else data
     return [a.get("username") for a in admins if a.get("username")]
 
 
@@ -155,14 +158,8 @@ def DEF_BILLING_USERS(CHATID, ADMIN):
     domain, headers = _panel(CHATID)
     if not domain:
         return []
-    # Server-side filter by admin = fast
-    url = f"{domain}/api/users?admin={ADMIN}"
-    r = requests.get(url, headers=headers, verify=False)
-    if r.status_code != 200:
-        return []
-    data = r.json()
-    users = data.get("users", []) if isinstance(data, dict) else data
-    return users  # full dicts; caller indexes them
+    # Server-side filter plus pagination so large admins are counted completely.
+    return _get_all_users(domain, headers, admin=ADMIN)
 
 
 def DEF_BILLING_CALC(CHATID, ADMIN, START):
@@ -190,8 +187,14 @@ def DEF_BILLING_CALC(CHATID, ADMIN, START):
             return {"error": f"index out of range 0-{len(users)-1}"}
 
     subset = users[idx:]
-    alloc = sum((u.get("data_limit") or 0) for u in subset)
-    used = sum((u.get("used_traffic") or 0) for u in subset)
+    limited_users = [
+        u for u in subset
+        if u.get("data_limit") not in (None, 0) and u.get("data_limit") < UNLIMITED_SENTINEL_BYTES
+    ]
+    unlimited_users = [u for u in subset if u not in limited_users]
+    alloc = sum((u.get("data_limit") or 0) for u in limited_users)
+    used = sum((u.get("used_traffic") or 0) for u in limited_users)
+    unlimited_used = sum((u.get("used_traffic") or 0) for u in unlimited_users)
 
     result = {
         "admin": ADMIN,
@@ -200,8 +203,11 @@ def DEF_BILLING_CALC(CHATID, ADMIN, START):
         "from_user": users[idx].get("username", "?"),
         "to_user": users[-1].get("username", "?"),
         "count": len(subset),
+        "limited_count": len(limited_users),
+        "unlimited_count": len(unlimited_users),
         "allocated_gb": _gb(alloc),
         "used_gb": _gb(used),
+        "unlimited_used_gb": _gb(unlimited_used),
         "left_gb": _gb(alloc - used),
     }
 
@@ -248,7 +254,7 @@ def DEF_PROTOCOLS(CHATID):
     domain, headers = _panel(CHATID)
     if not domain:
         return {}
-    r = requests.get(f"{domain}/api/inbounds", headers=headers, verify=False)
+    r = requests.get(f"{domain}/api/inbounds", headers=headers, verify=PANEL_VERIFY_TLS)
     if r.status_code != 200:
         return {}
     inbounds = r.json()
@@ -300,7 +306,7 @@ def DEF_PROTOCOL_APPLY(CHATID, PROTO, TAGS, ACTION, statuses=ACTIVE_STATUSES, ad
         return 0, 0, 0
 
     session = requests.Session()
-    session.verify = False
+    session.verify = PANEL_VERIFY_TLS
     session.headers.update(headers)
 
     targets = []
@@ -375,7 +381,7 @@ def DEF_GIVE_DATE_APPLY(CHATID, ADMIN, DAYS, progress_cb=None):
         return 0, 0, 0
 
     session = requests.Session()
-    session.verify = False
+    session.verify = PANEL_VERIFY_TLS
     session.headers.update(headers)
 
     users = _get_all_users(domain, headers, session=session, admin=ADMIN)
@@ -412,12 +418,16 @@ def DEF_FIND_UNLIMITED(CHATID, admin=None):
     """
     Return (time_unlimited, data_unlimited) lists of usernames.
     time_unlimited: expire == 0/None
-    data_unlimited: data_limit == 0/None
+    data_unlimited: data_limit == 0/None or a migrated legacy sentinel
     """
     domain, headers = _panel(CHATID)
     if not domain:
         return [], []
     users = _get_all_users(domain, headers, admin=admin)
     time_unl = [u.get("username") for u in users if not u.get("expire")]
-    data_unl = [u.get("username") for u in users if not u.get("data_limit")]
+    data_unl = [
+        u.get("username")
+        for u in users
+        if not u.get("data_limit") or u.get("data_limit", 0) >= UNLIMITED_SENTINEL_BYTES
+    ]
     return time_unl, data_unl

@@ -1,3 +1,4 @@
+from Function.config import PANEL_VERIFY_TLS
 from pyrogram.types import *
 from Function.db import *
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -6,7 +7,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 KEYBOARD_HOME = ReplyKeyboardMarkup([[KeyboardButton("🚀 Create User"),KeyboardButton("🎖 Notice")],
     [KeyboardButton("👤 Users"), KeyboardButton("👨🏻‍💻 Admins"), KeyboardButton("🎗 Nodes")],
     [KeyboardButton("🗃 Templates"),KeyboardButton("🎛 Monitoring")],
-    [KeyboardButton("💰 Billing"), KeyboardButton("🛠 Protocol"), KeyboardButton("🔄 Reset Alert")],
+    [KeyboardButton("💰 Billing"), KeyboardButton("🔄 Reset Alert")],
     [KeyboardButton("📅 Give Date"), KeyboardButton("♾ Unlimited")],
     [KeyboardButton("🔍 Search"), KeyboardButton("💬 Help"), KeyboardButton("🖼 QR Code")]], resize_keyboard=True)
 
@@ -89,26 +90,34 @@ def KEYBOARD_ADMINS_LIST(CHATID) :
     PANEL_USER, PANEL_PASS, PANEL_DOMAIN = DEF_IMPORT_DATA (CHATID)
     PANEL_TOKEN = DEF_PANEL_ACCESS(PANEL_USER, PANEL_PASS, PANEL_DOMAIN)
     URL = f"{PANEL_DOMAIN}/api/admins"
-    RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=False)
+    RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=PANEL_VERIFY_TLS)
     if RESPONCE.status_code == 200:
         RESPONCE_DATA = RESPONCE.json()
         KEYBOARD_ADMINS_LIST = []
-        for ADMIN in RESPONCE_DATA:
-            SUDO = "SUDO" if ADMIN.get("is_sudo") else "N.SUDO"
-            KEYBOARD_ADMINS_LIST.append([KeyboardButton(f"{ADMIN.get('username')} - {SUDO}")])
+        for ADMIN in RESPONCE_DATA.get("admins", []):
+            ROLE = ADMIN.get("role") or {}
+            KEYBOARD_ADMINS_LIST.append([KeyboardButton(f"{ADMIN.get('username')} - role:{ROLE.get('id')}")])
         KEYBOARD_ADMINS_LIST.append([KeyboardButton("🔙 cancel") , KeyboardButton("➕ Add new admin")])
         KEYBOARD_ADMINS_LIST = ReplyKeyboardMarkup(KEYBOARD_ADMINS_LIST, resize_keyboard=True)
         return KEYBOARD_ADMINS_LIST
-    
-KEYBOARD_ADMIN = ReplyKeyboardMarkup([[KeyboardButton("🔐 Change pass"),KeyboardButton("🔐 Change sudo")],
+
+KEYBOARD_ADMIN = ReplyKeyboardMarkup([[KeyboardButton("🔐 Change pass"),KeyboardButton("🪪 Change role")],
     [KeyboardButton("🗑 Delete admin")],
     [KeyboardButton("🔙 cancel")]] , resize_keyboard=True)
 
 KEYBOARD_YES_OR_NOO = ReplyKeyboardMarkup([[KeyboardButton("✅ YES , sure!"),KeyboardButton("❌ NO ,forget.")],
     [KeyboardButton("🔙 cancel")]] , resize_keyboard=True)
 
-KEYBOARD_SUDO = ReplyKeyboardMarkup([[KeyboardButton("✅ YES , is sudo!"),KeyboardButton("❌ NO , not sudo.")],
-    [KeyboardButton("🔙 cancel")]] , resize_keyboard=True)
+def KEYBOARD_ADMIN_ROLES(CHATID):
+    PANEL_USER, PANEL_PASS, PANEL_DOMAIN = DEF_IMPORT_DATA(CHATID)
+    PANEL_TOKEN = DEF_PANEL_ACCESS(PANEL_USER, PANEL_PASS, PANEL_DOMAIN)
+    response = requests.get(f"{PANEL_DOMAIN}/api/admin-roles/simple", headers=PANEL_TOKEN, verify=PANEL_VERIFY_TLS)
+    rows = []
+    if response.status_code == 200:
+        for role in response.json().get("roles", []):
+            rows.append([KeyboardButton(f"role: {role.get('id')} | {role.get('name')}")])
+    rows.append([KeyboardButton("🔙 cancel")])
+    return ReplyKeyboardMarkup(rows, resize_keyboard=True)
 
 KEYBOARD_USERS = ReplyKeyboardMarkup([[KeyboardButton("✅ Active"),KeyboardButton("💻 Clients"), KeyboardButton("❌ Disabled")],
     [KeyboardButton("🕰 Expired"), KeyboardButton("🪫 Limited"), KeyboardButton("🔌 On Hold")],
@@ -125,16 +134,16 @@ def DEF_NODES_LIST(CHATID) :
     PANEL_USER, PANEL_PASS, PANEL_DOMAIN = DEF_IMPORT_DATA (CHATID)
     PANEL_TOKEN = DEF_PANEL_ACCESS(PANEL_USER, PANEL_PASS, PANEL_DOMAIN)
     URL = f"{PANEL_DOMAIN}/api/nodes"
-    RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=False)
+    RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=PANEL_VERIFY_TLS)
     if RESPONCE.status_code == 200:
         RESPONCE_DATA = RESPONCE.json()
         KEYBOARD_NODES_LIST = []
-        for NODE in RESPONCE_DATA:
+        for NODE in RESPONCE_DATA.get("nodes", []):
             KEYBOARD_NODES_LIST.append([KeyboardButton(f"( {NODE.get('id')} ) {NODE.get('name')} - {NODE.get('address')}")])
         KEYBOARD_NODES_LIST.append([KeyboardButton("🔙 cancel")])
         KEYBOARD_NODES_LIST = ReplyKeyboardMarkup(KEYBOARD_NODES_LIST, resize_keyboard=True)
         return KEYBOARD_NODES_LIST
-    
+
 KEYBOARD_NODE = ReplyKeyboardMarkup([[KeyboardButton("🔏 Usage Coefficient"),KeyboardButton("📊 Status")],
     [KeyboardButton("✅ Activate"), KeyboardButton("⚡️ Reconnect"), KeyboardButton("❌ Disable")],
     [KeyboardButton("🔙 cancel")]] , resize_keyboard=True)
@@ -156,7 +165,7 @@ def KEYBOARD_TEMPLATES_LIST() :
         KEYBOARD_TEMPLATES_LIST.append([KeyboardButton(f"{TEMPLATE_NAME} - {TEMPLATE_DATA} GB {TEMPLATE_DATE} days")])
     KEYBOARD_TEMPLATES_LIST.append([KeyboardButton("🔙 cancel") , KeyboardButton("➕ Add new tempalte")])
     KEYBOARD_TEMPLATES_LIST = ReplyKeyboardMarkup(KEYBOARD_TEMPLATES_LIST, resize_keyboard=True)
-    return KEYBOARD_TEMPLATES_LIST 
+    return KEYBOARD_TEMPLATES_LIST
 
 
 KEYBOARD_TEMPLATE = ReplyKeyboardMarkup([[KeyboardButton("🗑 Delete Template")],
@@ -170,22 +179,45 @@ def KEYBOARD_ALL_INBOUNDS(INBOUNDS_ALL , INBOUNDS_SELECT , SELECTED_TAG , BACK_N
     KEYBOARD_ROWS = (len(INBOUNDS_ALL) + KEYBOARD_COLUMNS - 1) // KEYBOARD_COLUMNS
 
     if SELECTED_TAG :
-        INBOUNDS_SELECT[SELECTED_TAG] = not INBOUNDS_SELECT[SELECTED_TAG]    
+        INBOUNDS_SELECT[SELECTED_TAG] = not INBOUNDS_SELECT[SELECTED_TAG]
         KEYBOARD_INBOUNDS = [
             [InlineKeyboardButton(f"{KEYBOARD_SELECT if INBOUNDS_SELECT[TAG] else KEYBOARD_NOT_SELECT} {TAG}", callback_data=f"{BACK_NAME} tag {TAG}") for TAG in INBOUNDS_ALL[KEYBOARD_ROWS * KEYBOARD_COLUMNS:(KEYBOARD_ROWS + 1) * KEYBOARD_COLUMNS]]
             for KEYBOARD_ROWS in range(KEYBOARD_ROWS)]
-    
+
     else :
         KEYBOARD_INBOUNDS = [
                 [InlineKeyboardButton(f"{KEYBOARD_SELECT} {TAG}", callback_data=f"{BACK_NAME} tag {TAG}") for TAG in INBOUNDS_ALL[KEYBOARD_ROWS * KEYBOARD_COLUMNS:(KEYBOARD_ROWS + 1) * KEYBOARD_COLUMNS]]
                 for KEYBOARD_ROWS in range(KEYBOARD_ROWS)
             ]
-    
+
     KEYBOARD_INBOUNDS.append([
         InlineKeyboardButton("❌ cancel", callback_data=f"{BACK_NAME} no"),
         InlineKeyboardButton("✅ finish", callback_data=f"{BACK_NAME} yes")
     ])
     return InlineKeyboardMarkup(KEYBOARD_INBOUNDS)
+
+def KEYBOARD_ALL_GROUPS(GROUPS, GROUPS_SELECT, SELECTED_ID, BACK_NAME):
+    if SELECTED_ID is not None:
+        selected_id = int(SELECTED_ID)
+        if selected_id in GROUPS_SELECT:
+            GROUPS_SELECT[selected_id] = not GROUPS_SELECT[selected_id]
+    rows = []
+    buttons = []
+    for group in GROUPS:
+        group_id = int(group["id"])
+        marker = "➕" if GROUPS_SELECT.get(group_id, False) else "➖"
+        disabled = " (panel disabled)" if group.get("is_disabled") else ""
+        buttons.append(InlineKeyboardButton(
+            f"{marker} {group['name']}{disabled}",
+            callback_data=f"{BACK_NAME} group {group_id}",
+        ))
+    for index in range(0, len(buttons), 2):
+        rows.append(buttons[index:index + 2])
+    rows.append([
+        InlineKeyboardButton("❌ cancel", callback_data=f"{BACK_NAME} no"),
+        InlineKeyboardButton("✅ finish", callback_data=f"{BACK_NAME} yes"),
+    ])
+    return InlineKeyboardMarkup(rows)
 
 def KEYBOARD_TEMPLATES_LIST() :
     TEMPLATES = DEF_TEMPLATES_DATA()

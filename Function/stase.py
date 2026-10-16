@@ -1,3 +1,4 @@
+from Function.config import PANEL_VERIFY_TLS
 import requests , re , pytz
 from Function.db import *
 from persiantools.jdatetime import JalaliDateTime
@@ -16,7 +17,7 @@ def DEF_SUB_LINK_FIND_FROM_USER_MESSAGE (LINK) :
         return TOKEN
     else :
         return False
-    
+
 def DEF_CONVERT_DIFFERNCE_TIME_TO_REMAINING (DELTA) :
     DAYS = DELTA.days
     HOURS , remainder = divmod(DELTA.seconds , 3600)
@@ -31,9 +32,9 @@ def DEF_CONVERT_DIFFERNCE_TIME_TO_REMAINING (DELTA) :
         return f"{SECONDS} second"
 
 def DEF_PATCH_TO_SECEND(TIME) :
-    ONLINE_PATCH = "%Y-%m-%dT%H:%M:%S.%f" if '.' in TIME else "%Y-%m-%dT%H:%M:%S"
-    TIME = datetime.strptime(TIME , ONLINE_PATCH )
-    TIME_UTC = pytz.utc.localize(TIME)
+    TIME_UTC = datetime.fromisoformat(TIME.replace("Z", "+00:00"))
+    if TIME_UTC.tzinfo is None:
+        TIME_UTC = pytz.utc.localize(TIME_UTC)
     TIME_LOCAL = TIME_UTC.astimezone(pytz.timezone('Asia/Tehran'))
     TIME_NOW = datetime.now(pytz.timezone('Asia/Tehran'))
     DELTA = TIME_NOW - TIME_LOCAL
@@ -55,12 +56,12 @@ def DEF_STASE_USER (CHATID , MESSAGE_TEXT , KEYBOARD_HOME):
         URL = f"{PANEL_DOMAIN}/sub/{SUB_TOKEN}/info"
     else :
         URL = f"{PANEL_DOMAIN}/api/user/{MESSAGE_TEXT}"
-    RESPONCE = requests.get(url=URL , headers=PANEL_TOKEN , verify=False)
+    RESPONCE = requests.get(url=URL , headers=PANEL_TOKEN , verify=PANEL_VERIFY_TLS)
     if RESPONCE.status_code == 200 :
         RESPONCE_DATA = json.loads(RESPONCE.text)
     else :
         URL = f"{PANEL_DOMAIN}/api/users"
-        RESPONCE = requests.get(url=URL , headers=PANEL_TOKEN , verify=False)
+        RESPONCE = requests.get(url=URL , headers=PANEL_TOKEN , verify=PANEL_VERIFY_TLS)
         if RESPONCE.status_code == 200 :
             RESPONCE_DATA = RESPONCE.json()
             USERS = [user.get('username') for user in RESPONCE_DATA.get('users', [])]
@@ -76,7 +77,7 @@ def DEF_STASE_USER (CHATID , MESSAGE_TEXT , KEYBOARD_HOME):
             TEXT = "<b>I can't find user.</b>"
         return TEXT , KEYBOARD_HOME
     RD_USERNAME = RESPONCE_DATA.get("username")
-    RD_STATUS = RESPONCE_DATA.get("status")           
+    RD_STATUS = RESPONCE_DATA.get("status")
     if RD_STATUS == "active" or RD_STATUS == "expired" or RD_STATUS == "limited" or RD_STATUS == "disabled" :
         RD_DATE = RESPONCE_DATA.get("expire")
         if RD_DATE :
@@ -89,7 +90,7 @@ def DEF_STASE_USER (CHATID , MESSAGE_TEXT , KEYBOARD_HOME):
         else :
             RD_DATE_JALALI = None
             RD_DATE_LEFT = "♾"
-        RD_DATA_USED = round((RESPONCE_DATA.get("used_traffic")) / (1024 ** 3) , 3)
+        RD_DATA_USED = round((RESPONCE_DATA.get("used_traffic") or 0) / (1024 ** 3) , 3)
         if RD_STATUS == "limited" :
             RD_DATA_USED = "❌"
         RD_DATA_LIMIT = RESPONCE_DATA.get("data_limit")
@@ -99,11 +100,11 @@ def DEF_STASE_USER (CHATID , MESSAGE_TEXT , KEYBOARD_HOME):
             RD_DATA_LIMIT = "♾"
         if RESPONCE_DATA.get("online_at") :
             RD_LAST_ONLINE = f"{DEF_CONVERT_DIFFERNCE_TIME_TO_REMAINING(DEF_PATCH_TO_SECEND(RESPONCE_DATA.get('online_at')))} ago"
-        else : 
+        else :
             RD_LAST_ONLINE = "➖"
         if RESPONCE_DATA.get("sub_updated_at") :
             RD_SUB_LAST_UPDATE = f"{DEF_CONVERT_DIFFERNCE_TIME_TO_REMAINING(DEF_PATCH_TO_SECEND(RESPONCE_DATA.get('sub_updated_at')))} ago"
-        else : 
+        else :
             RD_SUB_LAST_UPDATE = "➖"
         RD_USER_AGENT = RESPONCE_DATA.get("sub_last_user_agent")
         if not RD_USER_AGENT :

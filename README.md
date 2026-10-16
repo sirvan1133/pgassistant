@@ -1,3 +1,22 @@
+# PasarGuard-compatible Holderbot
+
+This branch ports the running Holderbot features to the PasarGuard API. Start with
+[the migration/install guide](PASARGUARD_MIGRATION.md) and [the change list](CHANGELOG.md).
+Telegram application credentials are no longer embedded in code. Existing databases
+and session files must remain private and are not overwritten by setup.
+
+Offline checks (Python 3.12; no panel or Telegram connection):
+
+```bash
+python -m pip install -r requirements.txt
+python -m unittest discover -s tests -v
+```
+
+The legacy project description and author credits are retained below. For current
+installation and rollback instructions, follow the guide linked above.
+
+---
+
 ![Example Image](holderbotcover.png)
 
 <p align="center">
@@ -37,7 +56,7 @@ sudo bash -c "$(curl -sL https://github.com/sirvan1133/holderbot/raw/main/restar
 sudo bash -c "$(curl -sL https://github.com/sirvan1133/holderbot/raw/main/uninstall.sh)"
 ```
 
-# برای استفاده notice از اینباند زیر استفاده کنید 
+# برای استفاده notice از اینباند زیر استفاده کنید
 
 
 ```
@@ -52,5 +71,3 @@ sudo bash -c "$(curl -sL https://github.com/sirvan1133/holderbot/raw/main/uninst
   }
 }
 ```
-
-

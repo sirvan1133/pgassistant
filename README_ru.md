@@ -1,7 +1,17 @@
+# Holderbot для PasarGuard
+
+Добавлена совместимость с API PasarGuard. Перед установкой или обновлением прочитайте
+[руководство миграции](PASARGUARD_MIGRATION.md) и [список изменений](CHANGELOG.md).
+Не публикуйте токены, пароли, базы данных или Telegram-сессии. Установщик сохраняет
+существующие данные; Telegram API ID/hash задаются в приватном файле окружения.
+Ниже сохранены прежнее описание проекта и сведения об авторах.
+
+---
+
 ![Пример изображения](holderbotcover.png)
 
 <p align="center">
-(Added by <a href="https://github.com/Iambabyninja">Nikita</a> ❤️) 
+(Added by <a href="https://github.com/Iambabyninja">Nikita</a> ❤️)
 </p>
 
 # Что такое Holderbot? #

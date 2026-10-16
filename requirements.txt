@@ -1,0 +1,9 @@
+Pyrogram>=2.0.106,<3
+TgCrypto>=1.2.5,<2; platform_system != "Windows"
+requests>=2.32.3,<3
+Pillow>=10.4,<13
+qrcode[pil]>=7.4.2,<9
+persiantools>=4,<6
+pytz>=2024.1
+python-dateutil>=2.9,<3
+reportlab>=4.2,<5
