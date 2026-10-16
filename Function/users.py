@@ -1,3 +1,4 @@
+from Function.config import PANEL_VERIFY_TLS
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle
@@ -8,9 +9,9 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 def DEF_PATCH_TO_SECEND(TIME) :
-    ONLINE_PATCH = "%Y-%m-%dT%H:%M:%S.%f" if '.' in TIME else "%Y-%m-%dT%H:%M:%S"
-    TIME = datetime.strptime(TIME , ONLINE_PATCH )
-    TIME_UTC = pytz.utc.localize(TIME)
+    TIME_UTC = datetime.fromisoformat(TIME.replace("Z", "+00:00"))
+    if TIME_UTC.tzinfo is None:
+        TIME_UTC = pytz.utc.localize(TIME_UTC)
     TIME_LOCAL = TIME_UTC.astimezone(pytz.timezone('Asia/Tehran'))
     TIME_NOW = datetime.now(pytz.timezone('Asia/Tehran'))
     DELTA = TIME_NOW - TIME_LOCAL
@@ -20,7 +21,7 @@ def DEF_ALL_USERS(CHATID) :
     PANEL_USER, PANEL_PASS, PANEL_DOMAIN = DEF_IMPORT_DATA (CHATID)
     PANEL_TOKEN = DEF_PANEL_ACCESS(PANEL_USER, PANEL_PASS, PANEL_DOMAIN)
     URL = f"{PANEL_DOMAIN}/api/users"
-    RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=False)
+    RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=PANEL_VERIFY_TLS)
     LEN_ALL_USERS = LEN_ALL_ACTIVE_USERS = LEN_ALL_DISABLED_USERS = LEN_ALL_EXPIRED_USERS = LEN_ALL_LIMITED_USERS = LEN_ALL_ON_HOLD_USERS = LEN_ALL_ONLINE_USERS = LEN_ALL_OFFLINE_USERS = LEN_ALL_IS_UPDATE_USERS = LEN_ALL_NOT_UPDATE_USERS = 0
     if RESPONCE.status_code == 200 :
         RESPONCE_DATA = RESPONCE.json()
@@ -41,14 +42,14 @@ def DEF_ALL_USERS(CHATID) :
             if USER_ONLINE_AT :
                 DELTA = (DEF_PATCH_TO_SECEND(USER_ONLINE_AT)).total_seconds()
                 if int(DELTA) <= 86400 :
-                    LEN_ALL_ONLINE_USERS += 1 
+                    LEN_ALL_ONLINE_USERS += 1
                 else :
                     LEN_ALL_OFFLINE_USERS += 1
             USER_UPDATE_AT = USER.get('sub_updated_at')
             if USER_UPDATE_AT :
                 DELTA = (DEF_PATCH_TO_SECEND(USER_UPDATE_AT)).total_seconds()
                 if int(DELTA) <= 86400 :
-                    LEN_ALL_IS_UPDATE_USERS += 1 
+                    LEN_ALL_IS_UPDATE_USERS += 1
                 else :
                     LEN_ALL_NOT_UPDATE_USERS += 1
         TEXT = f"<b>👤 All users :</b> {LEN_ALL_USERS}\n<b>✅ Active users :</b> {LEN_ALL_ACTIVE_USERS}\n<b>❌ Disables users :</b> {LEN_ALL_DISABLED_USERS}\n<b>🕰 Expired users :</b> {LEN_ALL_EXPIRED_USERS}\n<b>🪫 Limited users :</b> {LEN_ALL_LIMITED_USERS}\n<b>🔌 On hold users :</b> {LEN_ALL_ON_HOLD_USERS}\n\n<b>👀 Online users (last 24h) :</b> {LEN_ALL_ONLINE_USERS}\n<b>⚰️ Offline users (more 24h) :</b> {LEN_ALL_OFFLINE_USERS}\n\n<b>📡 Updated users (last 24h) :</b> {LEN_ALL_IS_UPDATE_USERS}\n<b>⚰️ Not Update users (more 24h) :</b> {LEN_ALL_NOT_UPDATE_USERS}"
@@ -64,12 +65,12 @@ def DEF_USERS_LIST_STATUS(MESSAGE_TEXT , CHATID) :
         "🕰 Expired": "expired",
         "🪫 Limited": "limited",
         "🔌 On Hold": "on_hold"
-    }    
+    }
     USERS_LIST_RESUTL = USERS_LIST.get(MESSAGE_TEXT)
     PANEL_USER, PANEL_PASS, PANEL_DOMAIN = DEF_IMPORT_DATA (CHATID)
     PANEL_TOKEN = DEF_PANEL_ACCESS(PANEL_USER, PANEL_PASS, PANEL_DOMAIN)
     URL = f"{PANEL_DOMAIN}/api/users"
-    RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=False)
+    RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=PANEL_VERIFY_TLS)
     if RESPONCE.status_code == 200:
         RESPONCE_DATA = RESPONCE.json()
         LIST = []
@@ -107,12 +108,12 @@ def DEF_CONVERT_TO_SECEND(MESSAGE_TEXT):
         return TIME * 86400
     else:
         return None
-    
+
 def DEF_USERS_TIME_LIST (CHATID , CATAGORY , TIME) :
     PANEL_USER, PANEL_PASS, PANEL_DOMAIN = DEF_IMPORT_DATA (CHATID)
     PANEL_TOKEN = DEF_PANEL_ACCESS(PANEL_USER, PANEL_PASS, PANEL_DOMAIN)
     URL = f"{PANEL_DOMAIN}/api/users"
-    RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=False)
+    RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=PANEL_VERIFY_TLS)
     if RESPONCE.status_code == 200:
         RESPONCE_DATA = RESPONCE.json()
         USERS_LIST = []
@@ -138,7 +139,7 @@ def DEF_GET_CLIENTS(CHATID) :
     PANEL_USER, PANEL_PASS, PANEL_DOMAIN = DEF_IMPORT_DATA (CHATID)
     PANEL_TOKEN = DEF_PANEL_ACCESS(PANEL_USER, PANEL_PASS, PANEL_DOMAIN)
     URL = f"{PANEL_DOMAIN}/api/users"
-    RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=False)
+    RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=PANEL_VERIFY_TLS)
     if RESPONCE.status_code == 200:
         RESPONCE_DATA = RESPONCE.json()
         USERS_LIST = {}

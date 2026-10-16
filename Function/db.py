@@ -1,3 +1,4 @@
+from Function.config import PANEL_VERIFY_TLS
 import sqlite3 , requests , json
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -6,7 +7,7 @@ def DEF_GET_BOT_TOKEN():
     conn = sqlite3.connect('holder.db')
     cursor = conn.cursor()
     cursor.execute('''SELECT token FROM bot''')
-    second_column_value = cursor.fetchone()[0] 
+    second_column_value = cursor.fetchone()[0]
     conn.close()
     return second_column_value
 
@@ -46,7 +47,7 @@ def DEF_IMPORT_DATA (CHATID) :
 
 def DEF_PANEL_ACCESS(PANEL_USER, PANEL_PASS, PANEL_DOMAIN) :
     PANEL_TOKEN_DATA = {"username" : PANEL_USER , "password" : PANEL_PASS }
-    PANEL_TOKEN = requests.post(url=f"{PANEL_DOMAIN}/api/admin/token" , data=PANEL_TOKEN_DATA , verify=False)
+    PANEL_TOKEN = requests.post(url=f"{PANEL_DOMAIN}/api/admin/token" , data=PANEL_TOKEN_DATA , verify=PANEL_VERIFY_TLS)
     if PANEL_TOKEN.status_code == 200 :
         PANEL_TOKEN_BACK = json.loads(PANEL_TOKEN.text)
         PANEL_HEADERS = {
@@ -56,6 +57,66 @@ def DEF_PANEL_ACCESS(PANEL_USER, PANEL_PASS, PANEL_DOMAIN) :
         return PANEL_HEADERS
     else :
         return False
+
+
+def DEF_GET_GROUPS(CHATID):
+    """Return PasarGuard groups available to the configured admin."""
+    PANEL_USER, PANEL_PASS, PANEL_DOMAIN = DEF_IMPORT_DATA(CHATID)
+    PANEL_TOKEN = DEF_PANEL_ACCESS(PANEL_USER, PANEL_PASS, PANEL_DOMAIN)
+    if not PANEL_TOKEN:
+        return []
+    response = requests.get(
+        url=f"{PANEL_DOMAIN}/api/groups?limit=1000",
+        headers=PANEL_TOKEN,
+        verify=PANEL_VERIFY_TLS,
+        timeout=30,
+    )
+    if response.status_code != 200:
+        return []
+    data = response.json()
+    return data.get("groups", []) if isinstance(data, dict) else data
+
+
+def DEF_GROUP_IDS_FOR_INBOUNDS(CHATID, inbounds):
+    """Translate the old Marzban inbound selection to PasarGuard group IDs."""
+    selected_tags = set()
+    for tags in (inbounds or {}).values():
+        selected_tags.update(tags or [])
+    if not selected_tags:
+        return []
+
+    groups = DEF_GET_GROUPS(CHATID)
+    exact = []
+    partial = []
+    for group in groups:
+        tags = set(group.get("inbound_tags") or [])
+        if not tags:
+            continue
+        if tags.issubset(selected_tags):
+            exact.append(group["id"])
+        elif tags & selected_tags:
+            partial.append((len(tags & selected_tags), group["id"]))
+    if exact:
+        return sorted(set(exact))
+    if partial:
+        partial.sort(reverse=True)
+        return [partial[0][1]]
+    return []
+
+
+def DEF_HOLDERBOT_GROUP_ID(CHATID):
+    for group in DEF_GET_GROUPS(CHATID):
+        if set(group.get("inbound_tags") or []) == {"Holderbot"}:
+            return group.get("id")
+    return None
+
+
+def DEF_ABSOLUTE_SUBSCRIPTION_URL(panel_domain, subscription_url):
+    if not subscription_url:
+        return subscription_url
+    if subscription_url.startswith("/"):
+        return f"{panel_domain.rstrip('/')}{subscription_url}"
+    return subscription_url
 
 def DEF_MONITORING_DATA():
     conn = sqlite3.connect('holder.db')
@@ -86,7 +147,7 @@ def DEF_TEMPLATES_DATA():
     USER_DATA = cursor.fetchall()
     conn.close()
     return USER_DATA
-    
+
 def DEF_TEMPLATES_DELETE(TEM_NAME) :
     conn = sqlite3.connect('holder.db')
     cursor = conn.cursor()
@@ -106,7 +167,7 @@ def DEF_CHECK_TEMPLATES_NAME(TEXT):
     conn = sqlite3.connect('holder.db')
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM templates WHERE name = ?", (TEXT,))
-    result = cursor.fetchone()    
+    result = cursor.fetchone()
     conn.close()
     return result is not None
 
@@ -114,7 +175,7 @@ def DEF_TEMPLATES_DATA_ALL(TEXT):
     conn = sqlite3.connect('holder.db')
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM templates WHERE name = ?", (TEXT,))
-    result = cursor.fetchone()    
+    result = cursor.fetchone()
     conn.close()
     return result
 
@@ -141,7 +202,7 @@ def DEF_CHANGE_MESSAGER_STATUS(CHATID):
     OLD_STATUS = DEF_GET_MESSAGE_STATUS(CHATID)
     conn = sqlite3.connect('holder.db')
     cursor = conn.cursor()
-    if OLD_STATUS == "on" :    
+    if OLD_STATUS == "on" :
         cursor.execute('''UPDATE messages SET status = ? WHERE chatid = ?''', ("off", CHATID))
         conn.commit()
         conn.close()
@@ -149,18 +210,11 @@ def DEF_CHANGE_MESSAGER_STATUS(CHATID):
     else :
         PANEL_USER, PANEL_PASS, PANEL_DOMAIN = DEF_IMPORT_DATA (CHATID)
         PANEL_TOKEN = DEF_PANEL_ACCESS(PANEL_USER, PANEL_PASS, PANEL_DOMAIN)
-        URL = f"{PANEL_DOMAIN}/api/inbounds"
-        RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=False )
+        URL = f"{PANEL_DOMAIN}/api/inbounds/details"
+        RESPONCE = requests.get(url=URL, headers=PANEL_TOKEN , verify=PANEL_VERIFY_TLS )
         if RESPONCE.status_code == 200:
-            INBOUNDS = json.loads(RESPONCE.text)
-            FOUND = False
-            if "shadowsocks" in INBOUNDS :
-                for ITEM in INBOUNDS["shadowsocks"]:
-                    if "Holderbot" in ITEM["tag"]:
-                        FOUND = True
-                        break
-            else :
-                FOUND = False
+            INBOUNDS = RESPONCE.json()
+            FOUND = any(ITEM.get("tag") == "Holderbot" for ITEM in INBOUNDS)
             if FOUND :
                 cursor.execute('''UPDATE messages SET status = ? WHERE chatid = ?''', ("on", CHATID))
                 conn.commit()

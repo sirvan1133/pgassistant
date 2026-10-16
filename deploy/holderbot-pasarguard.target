@@ -1,0 +1,7 @@
+[Unit]
+Description=Holderbot for PasarGuard
+Wants=holderbot-pasarguard@holder.service holderbot-pasarguard@monitoring.service holderbot-pasarguard@expired.service holderbot-pasarguard@limiteder.service holderbot-pasarguard@reseter.service
+After=network-online.target
+
+[Install]
+WantedBy=multi-user.target

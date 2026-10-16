@@ -1,0 +1,18 @@
+[Unit]
+Description=Holderbot PasarGuard component %i
+After=network-online.target
+Wants=network-online.target
+PartOf=holderbot-pasarguard.target
+
+[Service]
+Type=simple
+WorkingDirectory=/root/holderbot-pasarguard
+ExecStart=/root/holderbot-pasarguard/hold/bin/python /root/holderbot-pasarguard/%i.py
+Restart=always
+RestartSec=5
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/etc/holderbot-pasarguard.env
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target
