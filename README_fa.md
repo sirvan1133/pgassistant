@@ -1,18 +1,18 @@
-# هولدربات سازگار با پاسارگارد (HolderBot for PasarGuard)
+# پی‌جی اسیستنت سازگار با پاسارگارد (PG Assistant for PasarGuard)
 
-نسخهٔ اختصاصی، پایدار و بازنویسی‌شدهٔ **هولدربات (HolderBot)** جهت سازگاری کامل با معماری و REST API پنل **پاسارگارد (PasarGuard v5.4.1)**.
+نسخهٔ اختصاصی، پایدار و بازنویسی‌شدهٔ **پی‌جی اسیستنت (PG Assistant)** جهت سازگاری کامل با معماری و REST API پنل **پاسارگارد (PasarGuard v5.4.1)**.
 
 جهت مشاهده تغییرات فنی، [شرح تغییرات فارسی](CHANGELOG_fa.md) را ببینید.
 
 ---
 
 <p align="center">
-  <img src="holderbotcover.png" alt="HolderBot Cover" width="600"/>
+  <img src="holderbotcover.png" alt="PG Assistant Cover" width="600"/>
 </p>
 
-# 📖 هولدربات چیست؟
+# 📖 پی‌جی اسیستنت (PG Assistant) چیست؟
 
-**هولدربات** یک دستیار هوشمند و سریع تلگرامی برای مدیریت پیشرفته پنل‌های پروکسی است. این نسخه به‌طور اختصاصی برای هماهنگی با **پاسارگارد (PasarGuard)** بازطراحی شده و تمام تعاملات مدیریتی، مالی، ساخت کاربر و مانیتورینگ را مستقیماً از طریق لایهٔ امن **REST API** پنل انجام می‌دهد، بدون اینکه نیازی به دستکاری مستقیم دیتابیس یا ورود مداوم به داشبورد وب باشد.
+**پی‌جی اسیستنت (PG Assistant)** یک دستیار هوشمند و سریع تلگرامی برای مدیریت پیشرفته پنل‌های پروکسی است. این نسخه به‌طور اختصاصی برای هماهنگی با **پاسارگارد (PasarGuard)** بازطراحی شده و تمام تعاملات مدیریتی، مالی، ساخت کاربر و مانیتورینگ را مستقیماً از طریق لایهٔ امن **REST API** پنل انجام می‌دهد، بدون اینکه نیازی به دستکاری مستقیم دیتابیس یا ورود مداوم به داشبورد وب باشد.
 
 ---
 
@@ -67,7 +67,7 @@
 روی سرور خود دستور زیر را اجرا کنید:
 
 ```bash
-cd /root && rm -f holderbot.sh* || true && wget https://raw.githubusercontent.com/sirvan1133/holderbot/main/holderbot.sh && chmod +x holderbot.sh && ./holderbot.sh
+cd /root && rm -f holderbot.sh* || true && wget https://raw.githubusercontent.com/sirvan1133/pgassistant/main/holderbot.sh && chmod +x holderbot.sh && ./holderbot.sh
 ```
 
 اطلاعات پنل و ربات از شما پرسیده شده و سرویس‌ها به‌صورت خودکار راه‌اندازی و فعال خواهند شد.

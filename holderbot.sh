@@ -10,7 +10,7 @@ fi
 target="/root/holderbot"
 legacy_dir="/root/holderbot"
 
-echo "=== HolderBot PasarGuard Installer & Updater ==="
+echo "=== PG Assistant PasarGuard Installer & Updater ==="
 
 # 1. Stop any running legacy or current holderbot processes
 echo "Stopping any existing bot processes..."
@@ -56,7 +56,7 @@ else
         mv "$target" "${target}_old_$(date +%Y%m%d%H%M%S)"
     fi
     echo "Cloning repository to $target..."
-    git clone https://github.com/sirvan1133/holderbot.git "$target"
+    git clone https://github.com/sirvan1133/pgassistant.git "$target"
 fi
 
 # 5. Restore databases if we backed them up
@@ -80,7 +80,7 @@ hold/bin/python setup_pasarguard.py
 # Adjust service template working directory to /root/holderbot
 cat << 'EOF' > /etc/systemd/system/holderbot@.service
 [Unit]
-Description=HolderBot PasarGuard Service %i
+Description=PG Assistant PasarGuard Service %i
 After=network-online.target
 Wants=network-online.target
 PartOf=holderbot.target
@@ -101,7 +101,7 @@ EOF
 
 cat << 'EOF' > /etc/systemd/system/holderbot.target
 [Unit]
-Description=HolderBot PasarGuard Target
+Description=PG Assistant PasarGuard Target
 Wants=holderbot@holder.service holderbot@monitoring.service holderbot@limiteder.service holderbot@expired.service holderbot@reseter.service
 
 [Install]
@@ -113,7 +113,7 @@ systemctl enable holderbot.target
 systemctl restart holderbot.target
 
 echo "=========================================="
-echo "HolderBot PasarGuard successfully installed/updated!"
+echo "PG Assistant PasarGuard successfully installed/updated!"
 echo "Status check: systemctl status 'holderbot@*'"
 echo "Logs: journalctl -u 'holderbot@*' -f"
 echo "=========================================="

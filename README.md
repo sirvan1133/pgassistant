@@ -1,6 +1,6 @@
-# هولدربات سازگار با پاسارگارد (HolderBot for PasarGuard)
+# پی‌جی اسیستنت سازگار با پاسارگارد (PG Assistant for PasarGuard)
 
-نسخهٔ اختصاصی، پایدار و بازنویسی‌شدهٔ **هولدربات (HolderBot)** برای هماهنگی و سازگاری کامل با REST API پنل **پاسارگارد (PasarGuard v5.4.1)**.
+نسخهٔ اختصاصی، پایدار و بازنویسی‌شدهٔ **پی‌جی اسیستنت (PG Assistant)** برای هماهنگی و سازگاری کامل با REST API پنل **پاسارگارد (PasarGuard v5.4.1)**.
 
 <p align="center">
   <a href="./README.md">فارسی (صفحه اصلی)</a> |
@@ -13,24 +13,24 @@
 ---
 
 <p align="center">
-  <img src="holderbotcover.png" alt="HolderBot Cover" width="650"/>
+  <img src="holderbotcover.png" alt="PG Assistant Cover" width="650"/>
 </p>
 
-## 📱 منوی دکمه‌ها و کلیدهای هولدربات در تلگرام
+## 📱 منوی دکمه‌ها و کلیدهای پی‌جی اسیستنت (PG Assistant) در تلگرام
 
 <p align="center">
-  <img src="menu_screenshot.png" alt="HolderBot Menu Buttons" width="800"/>
+  <img src="menu_screenshot.png" alt="PG Assistant Menu Buttons" width="800"/>
 </p>
 
 ---
 
-# 📖 هولدربات چیست؟
+# 📖 پی‌جی اسیستنت (PG Assistant) چیست؟
 
-**هولدربات** یک دستیار هوشمند، سریع و همه‌فن‌حریف تلگرامی برای مدیریت سرورها و کاربران پنل پروکسی است. این ربات مستقیماً از طریق لایهٔ امن **REST API پاسارگارد** کار می‌کند؛ بنابراین هیچ نیازی به لاگین مداوم به داشبورد تحت وب نبوده و تمام کارهای ادمین‌ها با سرعت بسیار بالا از طریق تلگرام قابل انجام است.
+**پی‌جی اسیستنت (PG Assistant)** یک دستیار هوشمند، سریع و همه‌فن‌حریف تلگرامی برای مدیریت سرورها و کاربران پنل پروکسی است. این ربات مستقیماً از طریق لایهٔ امن **REST API پاسارگارد** کار می‌کند؛ بنابراین هیچ نیازی به لاگین مداوم به داشبورد تحت وب نبوده و تمام کارهای ادمین‌ها با سرعت بسیار بالا از طریق تلگرام قابل انجام است.
 
 ---
 
-# 🌟 امکانات و قابلیت‌های اصلی هولدربات
+# 🌟 امکانات و قابلیت‌های اصلی پی‌جی اسیستنت (PG Assistant)
 
 ### ۱. 🚀 ایجاد کاربر (Create User)
 - **ساخت کاربر بر اساس Groupهای پاسارگارد:** تخصیص مستقیم کاربر به `group1` (فعال) طبق استاندارد پاسارگارد به جای Inboundهای مستقیم.
@@ -81,29 +81,29 @@
 
 # 🚀 راهنمای نصب سریع روی سرور
 
-برای نصب هولدربات روی سرورهای **Ubuntu 22.04 یا 24.04** از دستور زیر استفاده کنید:
+برای نصب پی‌جی اسیستنت (PG Assistant) روی سرورهای **Ubuntu 22.04 یا 24.04** از دستور زیر استفاده کنید:
 
 ```bash
-sudo bash -c "$(curl -sL https://github.com/sirvan1133/holderbot/raw/main/holderbot.sh)"
+sudo bash -c "$(curl -sL https://github.com/sirvan1133/pgassistant/raw/main/holderbot.sh)"
 ```
 
 ### دستورات کنترلی:
 
 - **راه‌اندازی مجدد سرویس‌ها:**
 ```bash
-sudo bash -c "$(curl -sL https://github.com/sirvan1133/holderbot/raw/main/restart.sh)"
+sudo bash -c "$(curl -sL https://github.com/sirvan1133/pgassistant/raw/main/restart.sh)"
 ```
 
 - **حذف کامل ربات:**
 ```bash
-sudo bash -c "$(curl -sL https://github.com/sirvan1133/holderbot/raw/main/uninstall.sh)"
+sudo bash -c "$(curl -sL https://github.com/sirvan1133/pgassistant/raw/main/uninstall.sh)"
 ```
 
 ---
 
 # ⚙️ معماری سرویس‌های پس‌زمینه (Systemd)
 
-هولدربات برای پایداری ۱۰۰٪ به ۵ سرویس مستقل `systemd` تقسیم شده است که پس از ریبوت سرور خودکار اجرا می‌شوند:
+پی‌جی اسیستنت (PG Assistant) برای پایداری ۱۰۰٪ به ۵ سرویس مستقل `systemd` تقسیم شده است که پس از ریبوت سرور خودکار اجرا می‌شوند:
 1. `holderbot@holder.service` — پردازشگر اصلی ربات تلگرام
 2. `holderbot@monitoring.service` — پایش زنده وضعیت نودها
 3. `holderbot@limiteder.service` — انتقال خودکار کاربران حجم‌تمام‌شده به `group2`
