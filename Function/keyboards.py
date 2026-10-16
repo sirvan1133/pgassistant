@@ -232,7 +232,7 @@ def KEYBOARD_TEMPLATES_LIST() :
 def KEYBOARD_CREATE_LIST() :
     TEMPLATES = DEF_TEMPLATES_DATA()
     KEYBOARD_TEMPLATES_LIST = []
-    KEYBOARD_TEMPLATES_LIST.append([KeyboardButton("🚀 Manual")])
+    KEYBOARD_TEMPLATES_LIST.append([KeyboardButton("⚡ Quick Create (30 Days)"), KeyboardButton("🚀 Manual")])
     for TEMPLATE in TEMPLATES :
         TEMPLATE_NAME, TEMPLATE_DATA , TEMPLATE_DATE = TEMPLATE
         KEYBOARD_TEMPLATES_LIST.append([KeyboardButton(f"{TEMPLATE_NAME} - {TEMPLATE_DATA} GB {TEMPLATE_DATE} days")])

@@ -572,7 +572,11 @@ async def holderbot(client: Client, message: Message) :
 
                 if CHECK_STEP == "create | wait to select command" :
 
-                    if MESSAGE_TEXT == "🚀 Manual" :
+                    if MESSAGE_TEXT == "⚡ Quick Create (30 Days)" :
+                        await client.send_message(chat_id=MESSAGE_CHATID , text="<b>⚡ Quick Create (30 Days - Group 1)\n\nPlease enter data limit (GB):\nExample: <code>20</code>, <code>30</code>, <code>50</code>, <code>100</code></b>" , reply_markup=KEYBOARD_CANCEL , parse_mode=enums.ParseMode.HTML)
+                        UPDATE_STEP = DEF_UPDATE_STEP(MESSAGE_CHATID,"create | quick")
+
+                    elif MESSAGE_TEXT == "🚀 Manual" :
                         await client.send_message(chat_id=MESSAGE_CHATID , text="<b>Please enter username :</b>" , reply_markup=KEYBOARD_CANCEL , parse_mode=enums.ParseMode.HTML)
                         UPDATE_STEP = DEF_UPDATE_STEP(MESSAGE_CHATID,f"create | manual")
 
@@ -622,7 +626,31 @@ async def holderbot(client: Client, message: Message) :
 
                     else :
 
-                        if CHECK_STEP.startswith("create | manual") :
+                        if CHECK_STEP == "create | quick" :
+                            if len(MESSAGES_SPLIT) == 1 and re.match(r"^\d*\.?\d+$", MESSAGE_TEXT) :
+                                DATA_LIMIT = MESSAGE_TEXT.strip()
+                                DATE_LIMIT = 30
+                                USERNAME = DEF_GENERATE_AUTO_USERNAME()
+                                PRIMARY_GID = DEF_GET_PRIMARY_GROUP_ID(MESSAGE_CHATID)
+                                if not PRIMARY_GID :
+                                    await client.send_message(chat_id=MESSAGE_CHATID , text="<b>❌ Could not find active Group 1 in PasarGuard panel.</b>" , reply_markup=KEYBOARD_HOME , parse_mode=enums.ParseMode.HTML)
+                                    UPDATE_STEP = DEF_UPDATE_STEP(MESSAGE_CHATID,"None")
+                                else :
+                                    WAIT = await client.send_message(chat_id=MESSAGE_CHATID, text="<b>⏳ Creating config...</b>", reply_markup=ReplyKeyboardRemove(), parse_mode=enums.ParseMode.HTML)
+                                    GROUP_PAYLOAD = DEF_GROUP_TEMPLATE_PAYLOAD([PRIMARY_GID])
+                                    USER_SUB = await asyncio.to_thread(DEF_CREATE_USER, MESSAGE_CHATID, USERNAME, DATA_LIMIT, DATE_LIMIT, {}, GROUP_PAYLOAD)
+                                    await WAIT.delete()
+                                    if not "❌" in USER_SUB :
+                                        QRCODE_IMG = DEF_CREATE_QRCODE(USER_SUB)
+                                        await client.send_photo(chat_id=MESSAGE_CHATID, photo=QRCODE_IMG, caption=f"<b>⚡ Config Created Successfully!</b>\n\n👤 <b>Username:</b> <code>{USERNAME}</code>\n📊 <b>Traffic:</b> <code>{DATA_LIMIT} GB</code>\n⏳ <b>Duration:</b> <code>{DATE_LIMIT} Days</code>\n🏷 <b>Group:</b> <code>Group {PRIMARY_GID}</code>\n\n🔗 <b>Subscription URL:</b>\n<code>{USER_SUB}</code>", reply_markup=KEYBOARD_HOME)
+                                        UPDATE_STEP = DEF_UPDATE_STEP(MESSAGE_CHATID,"None")
+                                    else :
+                                        await client.send_message(chat_id=MESSAGE_CHATID , text=USER_SUB , reply_markup=KEYBOARD_HOME , parse_mode=enums.ParseMode.HTML)
+                                        UPDATE_STEP = DEF_UPDATE_STEP(MESSAGE_CHATID,"None")
+                            else :
+                                await client.send_message(chat_id=MESSAGE_CHATID , text="<b>❌ Invalid amount. Please enter data limit (GB) as a number:</b>\nExample: <code>25</code> or <code>50</code>" , reply_markup=KEYBOARD_CANCEL , parse_mode=enums.ParseMode.HTML)
+
+                        elif CHECK_STEP.startswith("create | manual") :
 
                             if len(MESSAGES_SPLIT) == 1 and len(STEP_SPLIT) == 3 and len(MESSAGE_TEXT) > 2 :
                                 await client.send_message(chat_id=MESSAGE_CHATID , text="<b>Please enter data limit (GB).\nlike : <code>25.5</code>, <code>15</code>, <code>0.5</code>, <code>100</code></b></b>" , reply_markup=KEYBOARD_CANCEL , parse_mode=enums.ParseMode.HTML)

@@ -57,6 +57,30 @@ def DEF_GET_GROUP_SELECTION(CHATID):
 def DEF_SELECTED_GROUP_IDS(SELECTS):
     return sorted(int(group_id) for group_id, enabled in SELECTS.items() if enabled)
 
+def DEF_GET_PRIMARY_GROUP_ID(CHATID):
+    """Find Group 1 or the primary non-Holderbot group."""
+    groups = DEF_GET_GROUPS(CHATID)
+    # 1. Look for a group named 'Group 1' or 'group1' or id 1
+    for g in groups:
+        name = str(g.get("name", "")).strip().lower()
+        gid = g.get("id")
+        tags = set(g.get("inbound_tags") or [])
+        if "Holderbot" in tags or g.get("is_disabled"):
+            continue
+        if name in ("group 1", "group1", "active") or gid == 1:
+            return int(gid)
+    # 2. Pick the first non-holderbot, enabled group
+    for g in groups:
+        tags = set(g.get("inbound_tags") or [])
+        if "Holderbot" not in tags and not g.get("is_disabled"):
+            return int(g.get("id"))
+    return None
+
+def DEF_GENERATE_AUTO_USERNAME():
+    """Generate a clean unique random username like user_a1b2c3."""
+    import secrets
+    return f"user_{secrets.token_hex(3)}"
+
 def DEF_GROUP_TEMPLATE_PAYLOAD(GROUP_IDS):
     return {"__group_ids__": sorted(set(int(group_id) for group_id in GROUP_IDS))}
 
