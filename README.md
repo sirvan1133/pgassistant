@@ -111,10 +111,3 @@ sudo bash -c "$(curl -sL https://github.com/sirvan1133/holderbot/raw/main/uninst
 5. `holderbot@reseter.service` — سیستم مدیریت بازنشانی دوره‌ای ترافیک
 
 ---
-
-# ⚠️ نکات امنیتی
-- فایل‌های حساس (`.env`, `holder.db`, `reset.db`, `.session`) در فایل `.gitignore` مسدود شده‌اند و هرگز نباید روی گیت‌هاب عمومی بارگذاری شوند.
-- ارتباط با پاسارگارد تنها از طریق توکن API انجام می‌شود.
-
----
-❤️ توسعه‌یافته و بهینه‌سازی‌شده برای جامعه کاربری **PasarGuard**.
