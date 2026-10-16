@@ -148,6 +148,10 @@ async def holderbot(client: Client, message: Message) :
                 await client.send_message(chat_id=MESSAGE_CHATID , text=f"<b>Please select a templates or add a new templates?</b>" , reply_markup=KEYBOARD_TEMPLATES , parse_mode=enums.ParseMode.HTML , disable_web_page_preview=True )
                 UPDATE_STEP = DEF_UPDATE_STEP(MESSAGE_CHATID,"templates | wait to select command")
 
+            elif MESSAGE_TEXT == "⚡ Quick Create" :
+                await client.send_message(chat_id=MESSAGE_CHATID , text="<b>⚡ Quick Create (30 Days - Group 1)\n\nPlease enter data limit (GB):\nExample: <code>20</code>, <code>30</code>, <code>50</code>, <code>100</code></b>" , reply_markup=KEYBOARD_CANCEL , parse_mode=enums.ParseMode.HTML)
+                UPDATE_STEP = DEF_UPDATE_STEP(MESSAGE_CHATID,"create | quick")
+
             elif MESSAGE_TEXT == "🚀 Create User" :
                 KEYBOARD_TEMPLATES = KEYBOARD_CREATE_LIST()
                 await client.send_message(chat_id=MESSAGE_CHATID , text=f"<b>Please select a template or create user manually.</b>" , reply_markup=KEYBOARD_TEMPLATES , parse_mode=enums.ParseMode.HTML , disable_web_page_preview=True )
