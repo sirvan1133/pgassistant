@@ -646,7 +646,7 @@ async def holderbot(client: Client, message: Message) :
                                     await WAIT.delete()
                                     if not "❌" in USER_SUB :
                                         QRCODE_IMG = DEF_CREATE_QRCODE(USER_SUB)
-                                        await client.send_photo(chat_id=MESSAGE_CHATID, photo=QRCODE_IMG, caption=f"<b>⚡ Config Created Successfully!</b>\n\n👤 <b>Username:</b> <code>{USERNAME}</code>\n📊 <b>Traffic:</b> <code>{DATA_LIMIT} GB</code>\n⏳ <b>Duration:</b> <code>{DATE_LIMIT} Days</code>\n🏷 <b>Group:</b> <code>Group {PRIMARY_GID}</code>\n\n🔗 <b>Subscription URL:</b>\n<code>{USER_SUB}</code>", reply_markup=KEYBOARD_HOME)
+                                        await client.send_photo(chat_id=MESSAGE_CHATID, photo=QRCODE_IMG, caption=f"<b>👨🏻‍💻 <code>{USERNAME}</code>\n📊 {DATA_LIMIT} GB | ⏳ {DATE_LIMIT} Days\n\n<code>{USER_SUB}</code></b>", reply_markup=KEYBOARD_HOME)
                                         UPDATE_STEP = DEF_UPDATE_STEP(MESSAGE_CHATID,"None")
                                     else :
                                         await client.send_message(chat_id=MESSAGE_CHATID , text=USER_SUB , reply_markup=KEYBOARD_HOME , parse_mode=enums.ParseMode.HTML)
