@@ -99,4 +99,9 @@ sudo bash -c "$(curl -sL https://github.com/sirvan1133/pgassistant/raw/main/rest
 sudo bash -c "$(curl -sL https://github.com/sirvan1133/pgassistant/raw/main/uninstall.sh)"
 ```
 
+---
 
+<p align="center">
+  <b>تقدیم با عشق و احترام به تمام همراهان و جامعهٔ دوست‌داشتنی پاسارگارد ❤️🦁</b><br/>
+  <i>امیدواریم با PG Assistant، مدیریت سرورها و اکانت‌ها براتون مثل آب خوردن لذت‌بخش و سریع باشه! ✨🚀</i>
+</p>
