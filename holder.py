@@ -633,26 +633,37 @@ async def holderbot(client: Client, message: Message) :
                         if CHECK_STEP == "create | quick" :
                             if len(MESSAGES_SPLIT) == 1 and re.match(r"^\d*\.?\d+$", MESSAGE_TEXT) :
                                 DATA_LIMIT = MESSAGE_TEXT.strip()
+                                await client.send_message(chat_id=MESSAGE_CHATID , text="<b>🔢 How many configs do you want?</b>" , reply_markup=KEYBOARD_CREATE_MUCH , parse_mode=enums.ParseMode.HTML)
+                                UPDATE_STEP = DEF_UPDATE_STEP(MESSAGE_CHATID,f"create | quick_count {DATA_LIMIT}")
+                            else :
+                                await client.send_message(chat_id=MESSAGE_CHATID , text="<b>❌ Invalid amount. Please enter data limit (GB) as a number:</b>\nExample: <code>25</code> or <code>50</code>" , reply_markup=KEYBOARD_CANCEL , parse_mode=enums.ParseMode.HTML)
+
+                        elif CHECK_STEP.startswith("create | quick_count") :
+                            if len(MESSAGES_SPLIT) == 1 and MESSAGE_TEXT.isnumeric() and int(MESSAGE_TEXT) > 0 :
+                                DATA_LIMIT = STEP_SPLIT[3]
+                                COUNT = int(MESSAGE_TEXT)
                                 DATE_LIMIT = 30
-                                USERNAME = DEF_GENERATE_AUTO_USERNAME()
                                 PRIMARY_GID = DEF_GET_PRIMARY_GROUP_ID(MESSAGE_CHATID)
                                 if not PRIMARY_GID :
                                     await client.send_message(chat_id=MESSAGE_CHATID , text="<b>❌ Could not find active Group 1 in PasarGuard panel.</b>" , reply_markup=KEYBOARD_HOME , parse_mode=enums.ParseMode.HTML)
                                     UPDATE_STEP = DEF_UPDATE_STEP(MESSAGE_CHATID,"None")
                                 else :
-                                    WAIT = await client.send_message(chat_id=MESSAGE_CHATID, text="<b>⏳ Creating config...</b>", reply_markup=ReplyKeyboardRemove(), parse_mode=enums.ParseMode.HTML)
+                                    WAIT = await client.send_message(chat_id=MESSAGE_CHATID, text="<b>⏳ Creating config(s)...</b>", reply_markup=ReplyKeyboardRemove(), parse_mode=enums.ParseMode.HTML)
                                     GROUP_PAYLOAD = DEF_GROUP_TEMPLATE_PAYLOAD([PRIMARY_GID])
-                                    USER_SUB = await asyncio.to_thread(DEF_CREATE_USER, MESSAGE_CHATID, USERNAME, DATA_LIMIT, DATE_LIMIT, {}, GROUP_PAYLOAD)
+                                    for i in range(COUNT) :
+                                        USERNAME = DEF_GENERATE_AUTO_USERNAME()
+                                        USER_SUB = await asyncio.to_thread(DEF_CREATE_USER, MESSAGE_CHATID, USERNAME, DATA_LIMIT, DATE_LIMIT, {}, GROUP_PAYLOAD)
+                                        if not "❌" in USER_SUB :
+                                            QRCODE_IMG = DEF_CREATE_QRCODE(USER_SUB)
+                                            await client.send_photo(chat_id=MESSAGE_CHATID, photo=QRCODE_IMG, caption=f"<b>👨🏻‍💻 <code>{USERNAME}</code>\n📊 {DATA_LIMIT} GB | ⏳ {DATE_LIMIT} Days\n\n<code>{USER_SUB}</code></b>")
+                                        else :
+                                            await client.send_message(chat_id=MESSAGE_CHATID , text=USER_SUB , parse_mode=enums.ParseMode.HTML)
+                                            break
                                     await WAIT.delete()
-                                    if not "❌" in USER_SUB :
-                                        QRCODE_IMG = DEF_CREATE_QRCODE(USER_SUB)
-                                        await client.send_photo(chat_id=MESSAGE_CHATID, photo=QRCODE_IMG, caption=f"<b>👨🏻‍💻 <code>{USERNAME}</code>\n📊 {DATA_LIMIT} GB | ⏳ {DATE_LIMIT} Days\n\n<code>{USER_SUB}</code></b>", reply_markup=KEYBOARD_HOME)
-                                        UPDATE_STEP = DEF_UPDATE_STEP(MESSAGE_CHATID,"None")
-                                    else :
-                                        await client.send_message(chat_id=MESSAGE_CHATID , text=USER_SUB , reply_markup=KEYBOARD_HOME , parse_mode=enums.ParseMode.HTML)
-                                        UPDATE_STEP = DEF_UPDATE_STEP(MESSAGE_CHATID,"None")
+                                    await client.send_message(chat_id=MESSAGE_CHATID , text="🏛" , reply_markup=KEYBOARD_HOME , parse_mode=enums.ParseMode.HTML)
+                                    UPDATE_STEP = DEF_UPDATE_STEP(MESSAGE_CHATID,"None")
                             else :
-                                await client.send_message(chat_id=MESSAGE_CHATID , text="<b>❌ Invalid amount. Please enter data limit (GB) as a number:</b>\nExample: <code>25</code> or <code>50</code>" , reply_markup=KEYBOARD_CANCEL , parse_mode=enums.ParseMode.HTML)
+                                await client.send_message(chat_id=MESSAGE_CHATID , text="<b>❌ Please select or enter a valid number:</b>" , reply_markup=KEYBOARD_CREATE_MUCH , parse_mode=enums.ParseMode.HTML)
 
                         elif CHECK_STEP.startswith("create | manual") :
 
