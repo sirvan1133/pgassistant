@@ -99,15 +99,4 @@ sudo bash -c "$(curl -sL https://github.com/sirvan1133/pgassistant/raw/main/rest
 sudo bash -c "$(curl -sL https://github.com/sirvan1133/pgassistant/raw/main/uninstall.sh)"
 ```
 
----
 
-# ⚙️ معماری سرویس‌های پس‌زمینه (Systemd)
-
-پی‌جی اسیستنت (PG Assistant) برای پایداری ۱۰۰٪ به ۵ سرویس مستقل `systemd` تقسیم شده است که پس از ریبوت سرور خودکار اجرا می‌شوند:
-1. `holderbot@holder.service` — پردازشگر اصلی ربات تلگرام
-2. `holderbot@monitoring.service` — پایش زنده وضعیت نودها
-3. `holderbot@limiteder.service` — انتقال خودکار کاربران حجم‌تمام‌شده به `group2`
-4. `holderbot@expired.service` — انتقال کاربران منقضی‌شده به `group2`
-5. `holderbot@reseter.service` — سیستم مدیریت بازنشانی دوره‌ای ترافیک
-
----
