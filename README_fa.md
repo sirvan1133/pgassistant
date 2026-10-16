@@ -67,6 +67,6 @@ cd /root && rm -f holderbot.sh* || true && wget https://raw.githubusercontent.co
 ---
 
 <p align="center">
-  <b>تقدیم با عشق و احترام به تمام همراهان و جامعهٔ پاسارگارد ❤️🦁</b>
+  <b>تقدیم به جامعهٔ پاسارگارد ❤️🦁</b>
 </p>
 

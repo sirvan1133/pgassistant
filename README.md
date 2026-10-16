@@ -102,5 +102,5 @@ sudo bash -c "$(curl -sL https://github.com/sirvan1133/pgassistant/raw/main/unin
 ---
 
 <p align="center">
-  <b>تقدیم با عشق و احترام به تمام همراهان و جامعهٔ پاسارگارد ❤️🦁</b>
+  <b>تقدیم به جامعهٔ پاسارگارد ❤️🦁</b>
 </p>
